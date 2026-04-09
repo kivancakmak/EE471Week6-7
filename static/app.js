@@ -1,6 +1,3 @@
-const tabButtons = document.querySelectorAll(".mode-tab");
-const featurePanels = document.querySelectorAll(".feature-panel");
-
 const ttsForm = document.getElementById("tts-form");
 const textInput = document.getElementById("tts-text");
 const voiceSelect = document.getElementById("voice");
@@ -35,34 +32,33 @@ let activeAudioContext = null;
 let activeProcessor = null;
 let bufferedSamples = [];
 
-function switchPanel(targetId) {
-    featurePanels.forEach((panel) => {
-        panel.classList.toggle("active-panel", panel.id === targetId);
-        panel.classList.toggle("hidden-panel", panel.id !== targetId);
-    });
-
-    tabButtons.forEach((button) => {
-        button.classList.toggle("active", button.dataset.target === targetId);
-    });
-}
-
-tabButtons.forEach((button) => {
-    button.addEventListener("click", () => switchPanel(button.dataset.target));
-});
-
 function setStatus(element, message, tone = "") {
+    if (!element) {
+        return;
+    }
+
     element.textContent = message;
     element.className = tone ? `status ${tone}` : "status";
 }
 
 function updateCharacterCount() {
-    characterCount.textContent = textInput.value.length;
+    if (characterCount && textInput) {
+        characterCount.textContent = textInput.value.length;
+    }
 }
 
 function resetAudioResult() {
-    resultPanel.classList.add("hidden");
-    audioPlayer.removeAttribute("src");
-    downloadLink.removeAttribute("href");
+    if (resultPanel) {
+        resultPanel.classList.add("hidden");
+    }
+
+    if (audioPlayer) {
+        audioPlayer.removeAttribute("src");
+    }
+
+    if (downloadLink) {
+        downloadLink.removeAttribute("href");
+    }
 
     if (currentAudioUrl) {
         URL.revokeObjectURL(currentAudioUrl);
@@ -71,8 +67,13 @@ function resetAudioResult() {
 }
 
 function resetSttPreview() {
-    sttPreviewPanel.classList.add("hidden");
-    sttAudioPlayer.removeAttribute("src");
+    if (sttPreviewPanel) {
+        sttPreviewPanel.classList.add("hidden");
+    }
+
+    if (sttAudioPlayer) {
+        sttAudioPlayer.removeAttribute("src");
+    }
 
     if (currentSttAudioUrl) {
         URL.revokeObjectURL(currentSttAudioUrl);
@@ -83,17 +84,32 @@ function resetSttPreview() {
 function showSttPreview(file) {
     resetSttPreview();
     currentSttAudioUrl = URL.createObjectURL(file);
-    sttAudioPlayer.src = currentSttAudioUrl;
-    sttAudioPlayer.load();
-    sttPreviewPanel.classList.remove("hidden");
+
+    if (sttAudioPlayer) {
+        sttAudioPlayer.src = currentSttAudioUrl;
+        sttAudioPlayer.load();
+    }
+
+    if (sttPreviewPanel) {
+        sttPreviewPanel.classList.remove("hidden");
+    }
 }
 
 function clearTranscript() {
-    transcriptOutput.textContent = "";
-    transcriptPanel.classList.add("hidden");
+    if (transcriptOutput) {
+        transcriptOutput.textContent = "";
+    }
+
+    if (transcriptPanel) {
+        transcriptPanel.classList.add("hidden");
+    }
 }
 
 function clearTtsForm() {
+    if (!textInput || !voiceSelect) {
+        return;
+    }
+
     textInput.value = "";
     voiceSelect.selectedIndex = 0;
     resetAudioResult();
@@ -103,13 +119,22 @@ function clearTtsForm() {
 }
 
 function clearSttForm() {
-    audioFileInput.value = "";
+    if (audioFileInput) {
+        audioFileInput.value = "";
+    }
+
     currentSttFile = null;
     resetSttPreview();
     clearTranscript();
     setStatus(sttStatusBox, "", "");
-    clearSttButton.disabled = false;
-    recordingIndicator.textContent = "Ready to record";
+
+    if (clearSttButton) {
+        clearSttButton.disabled = false;
+    }
+
+    if (recordingIndicator) {
+        recordingIndicator.textContent = "Ready to record";
+    }
 }
 
 function mergeBuffers(chunks, totalLength) {
@@ -195,7 +220,11 @@ async function startRecording() {
     }
 
     clearTranscript();
-    audioFileInput.value = "";
+
+    if (audioFileInput) {
+        audioFileInput.value = "";
+    }
+
     currentSttFile = null;
     resetSttPreview();
     setStatus(sttStatusBox, "", "");
@@ -215,10 +244,22 @@ async function startRecording() {
         source.connect(activeProcessor);
         activeProcessor.connect(activeAudioContext.destination);
 
-        startRecordingButton.disabled = true;
-        stopRecordingButton.disabled = false;
-        clearSttButton.disabled = true;
-        recordingIndicator.textContent = "Recording...";
+        if (startRecordingButton) {
+            startRecordingButton.disabled = true;
+        }
+
+        if (stopRecordingButton) {
+            stopRecordingButton.disabled = false;
+        }
+
+        if (clearSttButton) {
+            clearSttButton.disabled = true;
+        }
+
+        if (recordingIndicator) {
+            recordingIndicator.textContent = "Recording...";
+        }
+
         setStatus(sttStatusBox, "Recording from microphone...", "loading");
     } catch (error) {
         setStatus(sttStatusBox, "Microphone access was denied or unavailable.", "error");
@@ -249,123 +290,175 @@ async function stopRecording() {
     activeAudioContext = null;
     bufferedSamples = [];
 
-    startRecordingButton.disabled = false;
-    stopRecordingButton.disabled = true;
-    clearSttButton.disabled = false;
-    recordingIndicator.textContent = "Recorded audio ready";
+    if (startRecordingButton) {
+        startRecordingButton.disabled = false;
+    }
+
+    if (stopRecordingButton) {
+        stopRecordingButton.disabled = true;
+    }
+
+    if (clearSttButton) {
+        clearSttButton.disabled = false;
+    }
+
+    if (recordingIndicator) {
+        recordingIndicator.textContent = "Recorded audio ready";
+    }
+
     setStatus(sttStatusBox, "Recording finished. You can transcribe it now.", "success");
 }
 
-textInput.addEventListener("input", updateCharacterCount);
-clearButton.addEventListener("click", clearTtsForm);
-audioFileInput.addEventListener("change", () => {
-    const [file] = audioFileInput.files;
-    clearTranscript();
+if (ttsForm && textInput && voiceSelect && submitButton) {
+    textInput.addEventListener("input", updateCharacterCount);
 
-    if (!file) {
-        currentSttFile = null;
-        resetSttPreview();
-        setStatus(sttStatusBox, "", "");
-        return;
+    if (clearButton) {
+        clearButton.addEventListener("click", clearTtsForm);
     }
 
-    currentSttFile = file;
-    showSttPreview(file);
-    recordingIndicator.textContent = "Audio file selected";
-    setStatus(sttStatusBox, "Audio file ready for transcription.", "success");
-});
-startRecordingButton.addEventListener("click", startRecording);
-stopRecordingButton.addEventListener("click", stopRecording);
-clearSttButton.addEventListener("click", clearSttForm);
+    updateCharacterCount();
 
-copyTranscriptButton.addEventListener("click", async () => {
-    const text = transcriptOutput.textContent.trim();
-    if (!text) {
-        return;
-    }
+    ttsForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-    try {
-        await navigator.clipboard.writeText(text);
-        setStatus(sttStatusBox, "Transcript copied to clipboard.", "success");
-    } catch (error) {
-        setStatus(sttStatusBox, "Could not copy the transcript automatically.", "error");
-    }
-});
+        resetAudioResult();
+        submitButton.disabled = true;
+        setStatus(statusBox, "Generating speech audio...", "loading");
 
-updateCharacterCount();
+        try {
+            const response = await fetch("/api/text-to-speech", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    text: textInput.value,
+                    voice: voiceSelect.value,
+                }),
+            });
 
-ttsForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+            if (!response.ok) {
+                const errorPayload = await response.json().catch(() => ({}));
+                throw new Error(errorPayload.error || "Speech generation failed.");
+            }
 
-    resetAudioResult();
-    submitButton.disabled = true;
-    setStatus(statusBox, "Generating speech audio...", "loading");
+            const audioBlob = await response.blob();
+            currentAudioUrl = URL.createObjectURL(audioBlob);
 
-    try {
-        const response = await fetch("/api/text-to-speech", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                text: textInput.value,
-                voice: voiceSelect.value,
-            }),
+            if (audioPlayer) {
+                audioPlayer.src = currentAudioUrl;
+                audioPlayer.load();
+            }
+
+            if (downloadLink) {
+                downloadLink.href = currentAudioUrl;
+            }
+
+            if (resultPanel) {
+                resultPanel.classList.remove("hidden");
+            }
+
+            setStatus(statusBox, "Speech synthesized successfully!", "success");
+        } catch (error) {
+            setStatus(statusBox, error.message, "error");
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
+}
+
+if (sttForm && languageSelect && transcribeButton) {
+    if (audioFileInput) {
+        audioFileInput.addEventListener("change", () => {
+            const [file] = audioFileInput.files;
+            clearTranscript();
+
+            if (!file) {
+                currentSttFile = null;
+                resetSttPreview();
+                setStatus(sttStatusBox, "", "");
+                return;
+            }
+
+            currentSttFile = file;
+            showSttPreview(file);
+
+            if (recordingIndicator) {
+                recordingIndicator.textContent = "Audio file selected";
+            }
+
+            setStatus(sttStatusBox, "Audio file ready for transcription.", "success");
         });
+    }
 
-        if (!response.ok) {
-            const errorPayload = await response.json().catch(() => ({}));
-            throw new Error(errorPayload.error || "Speech generation failed.");
+    if (startRecordingButton) {
+        startRecordingButton.addEventListener("click", startRecording);
+    }
+
+    if (stopRecordingButton) {
+        stopRecordingButton.addEventListener("click", stopRecording);
+    }
+
+    if (clearSttButton) {
+        clearSttButton.addEventListener("click", clearSttForm);
+    }
+
+    if (copyTranscriptButton) {
+        copyTranscriptButton.addEventListener("click", async () => {
+            const text = transcriptOutput ? transcriptOutput.textContent.trim() : "";
+            if (!text) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                setStatus(sttStatusBox, "Transcript copied to clipboard.", "success");
+            } catch (error) {
+                setStatus(sttStatusBox, "Could not copy the transcript automatically.", "error");
+            }
+        });
+    }
+
+    sttForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!currentSttFile) {
+            setStatus(sttStatusBox, "Please upload or record a WAV file first.", "error");
+            return;
         }
 
-        const audioBlob = await response.blob();
-        currentAudioUrl = URL.createObjectURL(audioBlob);
+        clearTranscript();
+        transcribeButton.disabled = true;
+        setStatus(sttStatusBox, "Transcribing audio...", "loading");
 
-        audioPlayer.src = currentAudioUrl;
-        downloadLink.href = currentAudioUrl;
-        resultPanel.classList.remove("hidden");
-        audioPlayer.load();
-        setStatus(statusBox, "Speech synthesized successfully!", "success");
-    } catch (error) {
-        setStatus(statusBox, error.message, "error");
-    } finally {
-        submitButton.disabled = false;
-    }
-});
+        try {
+            const formData = new FormData();
+            formData.append("audio", currentSttFile);
+            formData.append("language", languageSelect.value);
 
-sttForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+            const response = await fetch("/api/speech-to-text", {
+                method: "POST",
+                body: formData,
+            });
 
-    if (!currentSttFile) {
-        setStatus(sttStatusBox, "Please upload or record a WAV file first.", "error");
-        return;
-    }
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload.error || "Transcription failed.");
+            }
 
-    clearTranscript();
-    transcribeButton.disabled = true;
-    setStatus(sttStatusBox, "Transcribing audio...", "loading");
+            if (transcriptOutput) {
+                transcriptOutput.textContent = payload.transcript || "";
+            }
 
-    try {
-        const formData = new FormData();
-        formData.append("audio", currentSttFile);
-        formData.append("language", languageSelect.value);
+            if (transcriptPanel) {
+                transcriptPanel.classList.remove("hidden");
+            }
 
-        const response = await fetch("/api/speech-to-text", {
-            method: "POST",
-            body: formData,
-        });
-
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(payload.error || "Transcription failed.");
+            setStatus(sttStatusBox, "Audio transcribed successfully!", "success");
+        } catch (error) {
+            setStatus(sttStatusBox, error.message, "error");
+        } finally {
+            transcribeButton.disabled = false;
         }
-
-        transcriptOutput.textContent = payload.transcript || "";
-        transcriptPanel.classList.remove("hidden");
-        setStatus(sttStatusBox, "Audio transcribed successfully!", "success");
-    } catch (error) {
-        setStatus(sttStatusBox, error.message, "error");
-    } finally {
-        transcribeButton.disabled = false;
-    }
-});
+    });
+}

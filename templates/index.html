@@ -18,10 +18,21 @@
             </header>
 
             <nav class="mode-tabs" aria-label="Speech features">
-                <button type="button" class="mode-tab active" data-target="tts-panel">Text to Speech</button>
-                <button type="button" class="mode-tab" data-target="stt-panel">Speech to Text</button>
+                <a
+                    class="mode-link {% if mode == 'tts' %}active{% endif %}"
+                    href="{{ url_for('text_to_speech_page') }}"
+                >
+                    Text to Speech
+                </a>
+                <a
+                    class="mode-link {% if mode == 'stt' %}active{% endif %}"
+                    href="{{ url_for('speech_to_text_page') }}"
+                >
+                    Speech to Text
+                </a>
             </nav>
 
+            {% if mode == 'tts' %}
             <section id="tts-panel" class="panel feature-panel active-panel">
                 <div class="panel-heading">
                     <h2>Text-to-Speech</h2>
@@ -72,8 +83,10 @@
                     <a id="download-link" class="download-link" download="speech.mp3">Download Audio</a>
                 </section>
             </section>
+            {% endif %}
 
-            <section id="stt-panel" class="panel feature-panel hidden-panel">
+            {% if mode == 'stt' %}
+            <section id="stt-panel" class="panel feature-panel active-panel">
                 <div class="panel-heading">
                     <h2>Speech-to-Text</h2>
                     <p>Upload a WAV file or record a short message, then convert it into text.</p>
@@ -130,6 +143,7 @@
                     <div id="transcript-output" class="transcript-output"></div>
                 </section>
             </section>
+            {% endif %}
         </section>
     </main>
 

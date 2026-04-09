@@ -8,7 +8,7 @@ from xml.sax.saxutils import escape
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Flask, jsonify, redirect, render_template, request, send_file, url_for
 
 try:
     import azure.cognitiveservices.speech as speechsdk
@@ -165,8 +165,13 @@ def transcribe_audio_file(audio_path: Path, language: str) -> str:
 
 @app.get("/")
 def index():
+    return redirect(url_for("text_to_speech_page"))
+
+
+def render_speech_page(mode: str):
     return render_template(
         "index.html",
+        mode=mode,
         voices=VOICE_OPTIONS,
         default_voice="tr-TR-EmelNeural",
         languages=TRANSCRIPTION_LANGUAGE_OPTIONS,
@@ -174,6 +179,16 @@ def index():
         max_text_length=MAX_TEXT_LENGTH,
         max_audio_mb=MAX_AUDIO_BYTES // (1024 * 1024),
     )
+
+
+@app.get("/text-to-speech")
+def text_to_speech_page():
+    return render_speech_page("tts")
+
+
+@app.get("/speech-to-text")
+def speech_to_text_page():
+    return render_speech_page("stt")
 
 
 @app.post("/api/text-to-speech")

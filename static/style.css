@@ -90,17 +90,18 @@ body {
     border-bottom: 3px solid #e9edfa;
 }
 
-.mode-tab {
-    border: 0;
-    background: transparent;
+.mode-link {
+    display: block;
     padding: 0 0 14px;
     font-size: 1.08rem;
     font-weight: 700;
     color: #858dab;
+    text-align: center;
+    text-decoration: none;
     cursor: pointer;
 }
 
-.mode-tab.active {
+.mode-link.active {
     color: var(--ink);
     border-bottom: 4px solid #6f7ce8;
     margin-bottom: -3px;
