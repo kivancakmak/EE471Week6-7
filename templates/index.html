@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Speech Services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="app-card">
+            <header class="app-header">
+                <div class="title-mark" aria-hidden="true">Mic</div>
+                <div>
+                    <h1>Azure Speech Services</h1>
+                    <p>Text-to-Speech &amp; Speech-to-Text powered by Azure Cognitive Services</p>
+                </div>
+            </header>
+
+            <nav class="mode-tabs" aria-label="Speech features">
+                <button type="button" class="mode-tab active">Text to Speech</button>
+                <button type="button" class="mode-tab coming-soon" disabled>Speech to Text</button>
+            </nav>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <h2>Text-to-Speech</h2>
+                    <p>Enter text and generate speech audio with Azure voices.</p>
+                </div>
+
+                <form id="tts-form" class="tts-form">
+                    <div class="field">
+                        <label for="tts-text">Enter text to convert to speech:</label>
+                        <textarea
+                            id="tts-text"
+                            name="text"
+                            maxlength="{{ max_text_length }}"
+                            placeholder="Hello, EE471 class"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="controls-row">
+                        <div class="field voice-field">
+                            <label for="voice">Voice</label>
+                            <select id="voice" name="voice">
+                                {% for voice_id, voice_label in voices.items() %}
+                                <option value="{{ voice_id }}" {% if voice_id == default_voice %}selected{% endif %}>
+                                    {{ voice_label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="character-card">
+                            <span>Character count</span>
+                            <strong><span id="character-count">0</span> / {{ max_text_length }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="action-row">
+                        <button id="submit-button" class="primary-button" type="submit">Synthesize Speech</button>
+                        <button id="clear-button" class="secondary-button" type="button">Clear</button>
+                    </div>
+                </form>
+
+                <div id="status" class="status" aria-live="polite"></div>
+
+                <section id="result-panel" class="result-panel hidden">
+                    <h3>Generated Audio:</h3>
+                    <audio id="audio-player" controls></audio>
+                    <a id="download-link" class="download-link" download="speech.mp3">Download Audio</a>
+                </section>
+            </section>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
