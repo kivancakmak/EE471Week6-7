@@ -18,17 +18,17 @@
             </header>
 
             <nav class="mode-tabs" aria-label="Speech features">
-                <button type="button" class="mode-tab active">Text to Speech</button>
-                <button type="button" class="mode-tab coming-soon" disabled>Speech to Text</button>
+                <button type="button" class="mode-tab active" data-target="tts-panel">Text to Speech</button>
+                <button type="button" class="mode-tab" data-target="stt-panel">Speech to Text</button>
             </nav>
 
-            <section class="panel">
+            <section id="tts-panel" class="panel feature-panel active-panel">
                 <div class="panel-heading">
                     <h2>Text-to-Speech</h2>
                     <p>Enter text and generate speech audio with Azure voices.</p>
                 </div>
 
-                <form id="tts-form" class="tts-form">
+                <form id="tts-form" class="feature-form">
                     <div class="field">
                         <label for="tts-text">Enter text to convert to speech:</label>
                         <textarea
@@ -41,7 +41,7 @@
                     </div>
 
                     <div class="controls-row">
-                        <div class="field voice-field">
+                        <div class="field">
                             <label for="voice">Voice</label>
                             <select id="voice" name="voice">
                                 {% for voice_id, voice_label in voices.items() %}
@@ -67,9 +67,67 @@
                 <div id="status" class="status" aria-live="polite"></div>
 
                 <section id="result-panel" class="result-panel hidden">
-                    <h3>Generated Audio:</h3>
+                    <h3>Generated Audio</h3>
                     <audio id="audio-player" controls></audio>
                     <a id="download-link" class="download-link" download="speech.mp3">Download Audio</a>
+                </section>
+            </section>
+
+            <section id="stt-panel" class="panel feature-panel hidden-panel">
+                <div class="panel-heading">
+                    <h2>Speech-to-Text</h2>
+                    <p>Upload a WAV file or record a short message, then convert it into text.</p>
+                </div>
+
+                <form id="stt-form" class="feature-form">
+                    <div class="upload-card">
+                        <div class="field">
+                            <label for="audio-file">Audio file</label>
+                            <input id="audio-file" name="audio" type="file" accept=".wav,audio/wav">
+                        </div>
+                        <p class="helper-text">Use a clear `.wav` file up to {{ max_audio_mb }} MB.</p>
+                    </div>
+
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="language">Recognition language</label>
+                            <select id="language" name="language">
+                                {% for language_id, language_label in languages.items() %}
+                                <option value="{{ language_id }}" {% if language_id == default_language %}selected{% endif %}>
+                                    {{ language_label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="record-card">
+                            <span>Microphone</span>
+                            <strong id="recording-indicator">Ready to record</strong>
+                        </div>
+                    </div>
+
+                    <div class="action-row three-up">
+                        <button id="start-recording" class="primary-button" type="button">Start Recording</button>
+                        <button id="stop-recording" class="danger-button" type="button" disabled>Stop Recording</button>
+                        <button id="clear-stt" class="secondary-button" type="button">Clear</button>
+                    </div>
+
+                    <button id="transcribe-button" class="primary-button wide-button" type="submit">Transcribe Audio</button>
+                </form>
+
+                <div id="stt-status" class="status" aria-live="polite"></div>
+
+                <section id="stt-preview-panel" class="result-panel hidden">
+                    <h3>Selected Audio</h3>
+                    <audio id="stt-audio-player" controls></audio>
+                </section>
+
+                <section id="transcript-panel" class="result-panel transcript-panel hidden">
+                    <div class="result-header">
+                        <h3>Transcript</h3>
+                        <button id="copy-transcript" class="secondary-button small-button" type="button">Copy Text</button>
+                    </div>
+                    <div id="transcript-output" class="transcript-output"></div>
                 </section>
             </section>
         </section>
